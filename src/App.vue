@@ -22,7 +22,10 @@ onMounted(() => {
   // Set language to German
   sr.lang = "de-DE";
 
-  commands.value = config.spielzüge;
+  // commands.value = config.spielzüge;
+  commands.value = config.spielzüge
+    .map((item) => JSON.stringify(item).replace(/"/g, ""))
+    .join("\n");
 
   sr.onstart = () => {
     console.log("SR Started");
