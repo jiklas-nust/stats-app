@@ -1,0 +1,28 @@
+{
+  "players": [
+    "Valentin",
+    "Nils",
+    "Niklas",
+    "Felix",
+    "Andreas B.",
+    "Lukas",
+    "Anja",
+    "Elena",
+    "Tobi L."
+  ],
+  "spielzüge": [
+    "incomplete pass",
+    "complete pass",
+    "run",
+    "drop",
+    "first down",
+    "touch down",
+    "1 XP",
+    "2 XP",
+    "interception",
+    "deflection",
+    "flag pull",
+    "bad snap",
+    "strafe"
+  ]
+}

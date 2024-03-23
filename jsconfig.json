@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      // Define paths to your project's modules
+      "api": ["./src/api"]
+    }
+  },
+  "include": [
+    // Specify the files you want to include in IntelliSense
+    "src/**/*"
+  ],
+  "exclude": [
+    // Specify the files or directories you want to exclude
+    // Example: "node_modules"
+  ]
+}
