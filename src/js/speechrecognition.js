@@ -1,0 +1,169 @@
+import { ref, onMounted } from "vue";
+import { writeToDatabase } from "../api/api";
+
+export function useSpeechRecognition(config, commands) {
+  const Recognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+  const sr = new Recognition();
+
+  const transcript = ref("");
+  const spielzug = ref("");
+  const spieler = ref("");
+  const yards = ref("");
+  const sonstiges = ref("");
+  const nextInput = ref("spielzug");
+  const isRecording = ref(false);
+  const needsYards = ref(false);
+
+  onMounted(() => {
+    sr.continuous = true;
+    sr.interimResults = true;
+    sr.lang = "de-DE";
+    sr.onresult = handleResult;
+    sr.onstart = () => (isRecording.value = true);
+    sr.onend = () => (isRecording.value = false);
+  });
+
+  const handleResult = (evt) => {
+    let tempTranscript = "";
+    for (let i = 0; i < evt.results.length; i++) {
+      const result = evt.results[i];
+      const transcript = result[0].transcript.trim();
+
+      if (result.isFinal) {
+        tempTranscript += transcript + " ";
+        parseTranscript(transcript);
+      }
+    }
+    transcript.value = tempTranscript;
+  };
+
+  const parseTranscript = (transcript) => {
+    const lowerTrans = transcript.toLowerCase();
+    console.log(lowerTrans);
+
+    // Identify Spielzug (event)
+    if (nextInput.value == "spielzug") {
+      sr.lang = "en-US";
+      config.spielzüge.forEach((spielzugItem) => {
+        // console.log(spielzugItem);
+        if (lowerTrans.includes(spielzugItem)) {
+          spielzug.value = spielzugItem;
+          needsYards.value = [
+            "complete pass",
+            "run",
+            "first down",
+            "touchdown",
+            "interception",
+            "strafe",
+          ].includes(spielzugItem);
+          nextInput.value = "spieler";
+          commands.value = "Spielername oder Trikotnummer?";
+          restartMic();
+          sr.lang = "de-DE";
+        }
+      });
+    }
+
+    // Identify Spieler (player)
+    if (nextInput.value == "spieler") {
+      config.players.forEach((player) => {
+        // console.log(player);
+        if (lowerTrans.includes(player)) {
+          spieler.value = player;
+          nextInput.value = "sonstiges";
+          commands.value = "Strafen oder Ähnliches?";
+          if (needsYards.value) {
+            nextInput.value = "yards";
+            commands.value = "Wie viele Yards?";
+          }
+          restartMic();
+        }
+      });
+      const numberMatch = lowerTrans.match(/\d/);
+      if (numberMatch) {
+        console.log(numberMatch);
+        spieler.value = parseInt(numberMatch[0]);
+        nextInput.value = "sonstiges";
+        commands.value = "Strafen oder Ähnliches?";
+        if (needsYards.value) {
+          nextInput.value = "yards";
+          commands.value = "Wie viele Yards?";
+        }
+        restartMic();
+      }
+    }
+
+    // Extract Yards
+    if (nextInput.value == "yards") {
+      const yardsMatch = lowerTrans.match(/\d+ (yards|yard)/);
+      if (yardsMatch) {
+        yards.value = parseInt(yardsMatch[0]);
+        nextInput.value = "sonstiges";
+        commands.value = "Strafen oder Ähnliches?";
+        restartMic();
+      }
+    }
+
+    // Check for additional information like penalties
+    confirmInputs(lowerTrans);
+  };
+
+  const checkForAdditionalInfo = () => {
+    // handle penalty stuff
+  };
+
+  const confirmInputs = (transcript) => {
+    if (transcript.includes("bestätigen")) {
+      writeToDatabase(
+        spielzug.value,
+        spieler.value,
+        yards.value,
+        sonstiges.value
+      );
+      resetInputs();
+    }
+    if (transcript.includes("foul")) {
+      checkForAdditionalInfo();
+    }
+  };
+
+  const resetInputs = () => {
+    sr.stop();
+    spielzug.value = "";
+    spieler.value = "";
+    yards.value = "";
+    sonstiges.value = "";
+  };
+
+  const restartMic = () => {
+    stop();
+    sr.onend = () => {
+      start();
+    };
+  };
+
+  const start = () => {
+    try {
+      isRecording.value = true;
+      sr.start();
+    } catch (error) {
+      console.error("Speechrecognition error:", error);
+    }
+  };
+  const stop = () => {
+    isRecording.value = false;
+    sr.stop();
+  };
+
+  return {
+    transcript,
+    isRecording,
+    start,
+    stop,
+    spielzug,
+    spieler,
+    yards,
+    sonstiges,
+  };
+}

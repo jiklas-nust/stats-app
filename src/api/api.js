@@ -1,4 +1,4 @@
-export const writeToDatabase = (spielzug, spieler, yards, sonstiges) => {
+export const writeToDatabase = (spielzug, spieler, yards, __sonstiges) => {
   if (yards == "") {
     console.log("Ein", spielzug, "von", spieler, ".");
   } else {

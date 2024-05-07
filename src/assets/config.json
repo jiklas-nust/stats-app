@@ -1,20 +1,20 @@
 {
   "players": [
-    "Valentin",
-    "Nils",
-    "Niklas",
-    "Felix",
-    "Andreas B.",
-    "Lukas",
-    "Anja",
-    "Elena",
-    "Tobi L."
+    "valentin",
+    "nils",
+    "niklas",
+    "felix",
+    "andreas b.",
+    "lukas",
+    "anja",
+    "elena",
+    "tobi b."
   ],
   "spielzüge": [
-    "incomplete pass",
-    "complete pass",
-    "run",
     "drop",
+    "incomplete",
+    "pass",
+    "run",
     "first down",
     "touch down",
     "1 XP",
