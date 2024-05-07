@@ -8,7 +8,14 @@
     "lukas",
     "anja",
     "elena",
-    "tobi b."
+    "tobi l.",
+    "thomas",
+    "sammy",
+    "tim",
+    "tobi b.",
+    "leon",
+    "julian",
+    "emily"
   ],
   "spielzüge": [
     "drop",
@@ -22,7 +29,12 @@
     "interception",
     "deflection",
     "flag pull",
-    "bad snap",
-    "strafe"
+    "bad snap"
+  ],
+  "strafen": [
+    "illegaler kontakt",
+    "flag guarding",
+    "blitz block",
+    "false start"
   ]
 }

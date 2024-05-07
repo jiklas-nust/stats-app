@@ -50,7 +50,7 @@ export function useSpeechRecognition(config, commands) {
         if (lowerTrans.includes(spielzugItem)) {
           spielzug.value = spielzugItem;
           needsYards.value = [
-            "complete pass",
+            "pass",
             "run",
             "first down",
             "touchdown",
@@ -72,7 +72,19 @@ export function useSpeechRecognition(config, commands) {
         if (lowerTrans.includes(player)) {
           spieler.value = player;
           nextInput.value = "sonstiges";
-          commands.value = "Strafen oder Ähnliches?";
+          commands.value = "Strafen oder Bestätigen?";
+          if (needsYards.value) {
+            nextInput.value = "yards";
+            commands.value = "Wie viele Yards?";
+          }
+          restartMic();
+        }
+        const numberMatch = lowerTrans.match(/\d/);
+        if (numberMatch) {
+          console.log(numberMatch);
+          spieler.value = parseInt(numberMatch[0]);
+          nextInput.value = "sonstiges";
+          commands.value = "Strafen oder Bestätigen?";
           if (needsYards.value) {
             nextInput.value = "yards";
             commands.value = "Wie viele Yards?";
@@ -80,18 +92,6 @@ export function useSpeechRecognition(config, commands) {
           restartMic();
         }
       });
-      const numberMatch = lowerTrans.match(/\d/);
-      if (numberMatch) {
-        console.log(numberMatch);
-        spieler.value = parseInt(numberMatch[0]);
-        nextInput.value = "sonstiges";
-        commands.value = "Strafen oder Ähnliches?";
-        if (needsYards.value) {
-          nextInput.value = "yards";
-          commands.value = "Wie viele Yards?";
-        }
-        restartMic();
-      }
     }
 
     // Extract Yards
@@ -100,32 +100,68 @@ export function useSpeechRecognition(config, commands) {
       if (yardsMatch) {
         yards.value = parseInt(yardsMatch[0]);
         nextInput.value = "sonstiges";
-        commands.value = "Strafen oder Ähnliches?";
+        commands.value = "Strafen oder Bestätigen?";
         restartMic();
       }
     }
 
-    // Check for additional information like penalties
-    confirmInputs(lowerTrans);
+    if (nextInput.value == "sonstiges") {
+      if (lowerTrans.includes("strafe")) {
+        nextInput.value = "strafe";
+        commands.value = "Welche Strafe?";
+        restartMic();
+      }
+      if (lowerTrans.includes("bestätigen")) {
+        confirmInputs();
+      }
+    }
+
+    if (nextInput.value == "strafe") {
+      config.strafen.forEach((strafe) => {
+        // console.log(strafe);
+        if (lowerTrans.includes(strafe)) {
+          sonstiges.value += strafe;
+          nextInput.value = "spieler oder team";
+          commands.value = "Gegner oder welcher unserer Spielenden?";
+          restartMic();
+        }
+      });
+    }
+
+    if (nextInput.value == "spieler oder team") {
+      if (lowerTrans.includes("gegner")) {
+        nextInput.value = "sonstiges";
+        commands.value = "Weitere Strafen oder Bestätigen?";
+        return;
+      }
+      config.players.forEach((player) => {
+        // console.log(player);
+        if (lowerTrans.includes(player)) {
+          sonstiges.value += " " + player + ";";
+          nextInput.value = "sonstiges";
+          commands.value = "Weitere Strafen oder Bestätigen?";
+          restartMic();
+        }
+        const numberMatch = lowerTrans.match(/\d/);
+        if (numberMatch) {
+          console.log(numberMatch);
+          spieler.value = parseInt(numberMatch[0]);
+          nextInput.value = "sonstiges";
+          commands.value = "Strafen oder Ähnliches?";
+          restartMic();
+        }
+      });
+    }
   };
 
-  const checkForAdditionalInfo = () => {
-    // handle penalty stuff
-  };
-
-  const confirmInputs = (transcript) => {
-    if (transcript.includes("bestätigen")) {
-      writeToDatabase(
-        spielzug.value,
-        spieler.value,
-        yards.value,
-        sonstiges.value
-      );
-      resetInputs();
-    }
-    if (transcript.includes("foul")) {
-      checkForAdditionalInfo();
-    }
+  const confirmInputs = () => {
+    writeToDatabase(
+      spielzug.value,
+      spieler.value,
+      yards.value,
+      sonstiges.value
+    );
+    resetInputs();
   };
 
   const resetInputs = () => {
