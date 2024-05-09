@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">talkin-stats</string>
+    <string name="title_activity_main">talkin-stats</string>
+    <string name="package_name">com.talkinstats.app</string>
+    <string name="custom_url_scheme">com.talkinstats.app</string>
+</resources>
