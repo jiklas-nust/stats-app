@@ -1,5 +1,20 @@
 import { ref, onMounted } from "vue";
 import { writeToDatabase } from "../api/api";
+/*import { SpeechRecognition } from "@capacitor-community/speech-recognition";
+
+async function enableSpeechRecognition() {
+  const available = await SpeechRecognition.available();
+  if (available) {
+    // Configure and start recognition
+    SpeechRecognition.start({
+      language: "en-US",
+      maxResults: 1,
+      prompt: "Speak now!",
+    });
+  } else {
+    console.error("Speech recognition not available");
+  }
+}*/
 
 export function useSpeechRecognition(config, commands) {
   const Recognition =
@@ -14,6 +29,30 @@ export function useSpeechRecognition(config, commands) {
   const nextInput = ref("spielzug");
   const isRecording = ref(false);
   const needsYards = ref(false);
+
+  sr.onerror = function (event) {
+    console.error("Speech recognition error: " + event.error);
+    switch (event.error) {
+      case "network":
+        alert("Network error - please check your internet connection.");
+        break;
+      case "no-speech":
+        alert("No speech was detected. Please try again.");
+        break;
+      case "not-allowed":
+        alert(
+          "The speech recognition permission was denied. Please allow access to the microphone."
+        );
+        break;
+      case "service-not-allowed":
+        alert(
+          "Speech recognition service is not allowed. Please check if your browser supports it."
+        );
+        break;
+      default:
+        alert("An error occurred in speech recognition: " + event.error);
+    }
+  };
 
   onMounted(() => {
     sr.continuous = true;
